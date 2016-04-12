@@ -1,8 +1,8 @@
 {
   "name": "vogels-cache",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "author": "Adriano Cola <adriano@ensemble.com.br>",
-  "description": "Redis backed cache for Vogel (DynamoDB data mapper)",
+  "description": "Redis backed cache for Vogels (DynamoDB data mapper)",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
@@ -27,5 +27,16 @@
     "fakeredis": "^1.0.2",
     "should": "^8.0.2",
     "vogels": "^2.2.0"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adrianocola/vogels-cache.git"
+  },
+  "bugs": {
+    "url": "https://github.com/adrianocola/vogels-cache/issues"
+  },
+  "homepage": "https://github.com/adrianocola/vogels-cache#readme"
 }

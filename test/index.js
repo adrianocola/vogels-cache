@@ -535,7 +535,13 @@ describe('vogels-cache',function(){
 
     });
 
+    describe('serialization',function(){
 
+        it.skip('should serialize subdocuments',function(done){
+            
 
+        });
+
+    });
 
 });
