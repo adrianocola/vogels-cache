@@ -23,10 +23,9 @@
   },
   "devDependencies": {
     "mocha": "^2.3.4",
-    "joi": "^7.0.1",
+    "joi": "^5.1.0",
     "fakeredis": "^1.0.2",
     "should": "^8.0.2",
-    "vogels": "^2.2.0",
-    "redis": "^2.6.0-1"
+    "vogels": "^2.2.0"
   }
 }
