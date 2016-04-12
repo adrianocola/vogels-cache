@@ -16,7 +16,7 @@ function cacheableJSON(model){
 function JSONfromCache(json){
     for (var key in json) {
         var value = json[key];
-        if(typeof value === 'string' && value.startsWith('!{')){
+        if(typeof value === 'string' && _.startsWith(value,'!{')){
             try{
                 json[key] = JSON.parse(value.substring(1));
             }catch(e){}
