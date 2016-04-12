@@ -1,6 +1,5 @@
 var assert = require('assert');
 var should = require('should');
-var sinon  = require('sinon');
 var Vogels = require('vogels');
 var async = require('async');
 var Joi = require('joi');
