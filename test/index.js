@@ -19,7 +19,7 @@ describe('vogels-cache',function(){
 
         this.timeout(10000);
 
-        Vogels.AWS.config.update({endpoint: 'http://localhost:8801', region: 'REGION', accessKeyId: 'abc', secretAccessKey: '123'});
+        Vogels.AWS.config.update({endpoint: 'http://localhost:8000', region: 'REGION', accessKeyId: 'abc', secretAccessKey: '123'});
 
         Foo = Vogels.define('foo', {
             tableName: 'foo',
