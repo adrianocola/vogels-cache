@@ -310,9 +310,9 @@ describe('vogels-cache',function(){
                         (!foo.cached).should.be.ok;
                         (!foo.fromCache).should.be.ok;
 
-                        redis.hget('foo:'+key,'data',function(err,data){
+                        redis.get('foo:'+key,function(err,data){
                             (!err).should.be.ok;
-                            data.should.be.equal(key); //should be equal old cached value
+                            data.indexOf('updated').should.be.equal(-1); //should be equal old cached value
                             done();
                         });
 
@@ -583,9 +583,9 @@ describe('vogels-cache',function(){
                             (!err).should.be.ok;
                             foo.cached.should.be.ok;
 
-                            redis.hget('foo:'+key,'data',function(err,data){
+                            redis.get('foo:'+key,function(err,data){
                                 (!err).should.be.ok;
-                                data.should.be.equal('new value');
+                                data.indexOf('new value').should.not.be.equal(-1);
                                 done();
                             });
 
@@ -611,9 +611,9 @@ describe('vogels-cache',function(){
 
                             (!err).should.be.ok;
 
-                            redis.hget('foo:'+key,'data',function(err,data){
+                            redis.get('foo:'+key,function(err,data){
                                 (!err).should.be.ok;
-                                data.should.be.equal(key);
+                                data.indexOf('new value').should.be.equal(-1);
                                 done();
                             });
 
@@ -695,78 +695,10 @@ describe('vogels-cache',function(){
 
     describe('serialization',function(){
 
-        it('should serialize subdocuments',function(done){
-
-            var CacheableBar = VogelsCache.prepare(Bar);
-            var key = 'serialization-1';
-            var range = 'test';
-
-            var originalSettings = {
-                mood: range,
-                free: true
-            }
-
-            CacheableBar.create({
-                username: key,
-                message: range,
-                data: range,
-                settings : originalSettings
-            },function(err){
-
-                (!err).should.be.ok;
-
-                redis.hget('bar:'+key+':'+range,'settings',function(err,settings){
-
-                    (!err).should.be.ok;
-                    settings.should.be.equal('!'+JSON.stringify(originalSettings));
-                    done();
-                })
-
-            })
-
-        });
-
-        it('should deserialize subdocuments',function(done){
-
-            var CacheableBar = VogelsCache.prepare(Bar);
-            var key = 'serialization-2';
-            var range = 'test';
-
-            var originalSettings = {
-                mood: range,
-                free: true
-            };
-
-            CacheableBar.create({
-                username: key,
-                message: range,
-                data: range,
-                settings : originalSettings
-            },function(err,bar){
-
-                (!err).should.be.ok;
-
-                CacheableBar.get(key,range,function(err,bar){
-
-                    (!err).should.be.ok;
-                    bar.fromCache.should.be.ok;
-                    bar.get('settings').should.have.property('mood',range);
-                    bar.get('settings').should.have.property('free',true);
-
-                    done();
-
-
-                });
-
-            })
-
-        });
-
         it('should preserve types',function(done){
 
             var CacheableFoo = VogelsCache.prepare(Foo);
             var key = 'serialization-3';
-            var date = new Date();
 
             CacheableFoo.create({
                 username: key,
@@ -781,6 +713,8 @@ describe('vogels-cache',function(){
                 CacheableFoo.get(key,function(err,foo){
 
                     (!err).should.be.ok;
+
+                    foo.fromCache.should.be.ok;
 
                     foo.get('number').should.be.equal(10);
                     foo.get('boolean').should.be.equal(false);

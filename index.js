@@ -2,27 +2,12 @@ var _ = require('lodash');
 var async = require('async');
 const SEP = ':';
 
-function cacheableJSON(model){
-    var json = model.toJSON();
-    for (var key in json) {
-        var value = json[key];
-        if(typeof value === 'object'){
-            json[key] = '!' +  JSON.stringify(value);
-        }
+function JSONfromCache(string){
+    try{
+        return JSON.parse(string);
+    }catch(e){
+        throw e;
     }
-    return json;
-}
-
-function JSONfromCache(json){
-    for (var key in json) {
-        var value = json[key];
-        if(typeof value === 'string' && _.startsWith(value,'!{')){
-            try{
-                json[key] = JSON.parse(value.substring(1));
-            }catch(e){}
-        }
-    }
-    return json;
 }
 
 function clearCacheOptions(options){
@@ -80,7 +65,7 @@ VogelsCache.prepare = function(schema,config){
         model.cached = new Date();
         var cachedKey = getModelCacheKey(model);
         var multi = redis.multi();
-        multi.hmset(cachedKey,cacheableJSON(model));
+        multi.set(cachedKey,JSON.stringify(model.toJSON()));
         if(expire){
             multi.expire(cachedKey, expire);
         }
@@ -228,7 +213,7 @@ VogelsCache.prepare = function(schema,config){
 
         var cacheKey = getCacheKey(hashKey,rangeKey);
 
-        redis.hgetall(cacheKey,function(err,resp){
+        redis.get(cacheKey,function(err,resp){
             if(resp){
                 var item = new CachedSchema(JSONfromCache(resp));
                 item.fromCache = new Date();
@@ -401,7 +386,7 @@ VogelsCache.prepare = function(schema,config){
                 cacheKey = getCacheKey(value[hashKey],value[rangeKey]);
             }
 
-            redis.hgetall(cacheKey,function(err,resp){
+            redis.get(cacheKey,function(err,resp){
                 if(err || !resp){
                     missing.push(value);
                     //leaves a placeholder that can be filled by dynamodb later
