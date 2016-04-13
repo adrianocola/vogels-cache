@@ -177,7 +177,9 @@ describe('vogels-cache',function(){
                 var foo = CacheableFoo.create({
                     username: key,
                     data: 'bar'
-                },function(){
+                },function(err){
+
+                    (!err).should.be.ok;
 
                     redis.exists('foo:'+key,function(err,exist){
                         (!err).should.be.ok;
@@ -189,10 +191,45 @@ describe('vogels-cache',function(){
 
             });
 
+            it('should cache creation of multiple items',function(done){
+
+                var CacheableFoo = VogelsCache.prepare(Foo);
+                var key1 = 'model-create-2-1';
+                var key2 = 'model-create-2-2';
+
+                var foo = CacheableFoo.create([
+                    {
+                        username: key1,
+                        data: 'bar'
+                    },
+                    {
+                        username: key2,
+                        data: 'bar'
+                    }
+                ],function(err){
+
+                    (!err).should.be.ok;
+
+                    redis.exists('foo:'+key1,function(err,exist){
+                        (!err).should.be.ok;
+                        exist.should.be.equal(1);
+
+                        redis.exists('foo:'+key2,function(err,exist){
+                            (!err).should.be.ok;
+                            exist.should.be.equal(1);
+                            done();
+                        })
+
+                    })
+
+                });
+
+            });
+
             it('should NOT cache if CACHE_RESULT:false passed as option',function(done){
 
                 var CacheableFoo = VogelsCache.prepare(Foo);
-                var key = 'model-create-2';
+                var key = 'model-create-3';
 
                 var foo = CacheableFoo.create({
                     username: key,
@@ -212,7 +249,7 @@ describe('vogels-cache',function(){
             it('should set cache expire if CACHE_EXPIRE passed as option',function(done){
 
                 var CacheableFoo = VogelsCache.prepare(Foo);
-                var key = 'model-create-3';
+                var key = 'model-create-4';
                 var expire = 10;
 
                 var foo = CacheableFoo.create({

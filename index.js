@@ -257,7 +257,13 @@ VogelsCache.prepare = function(schema,config){
         originalCreate.apply(schema,[attrs,options,function(err,model){
 
             if(!err && cacheOptions.CACHE_RESULT){
-                cacheModel(model,cacheOptions.CACHE_EXPIRE);
+                if (_.isArray(model)) {
+                    async.each(model,function(m,cb){
+                        cacheModel(m,cacheOptions.CACHE_EXPIRE,cb);
+                    });
+                }else{
+                    cacheModel(model,cacheOptions.CACHE_EXPIRE);
+                }
             }
 
             callback(err,model);
