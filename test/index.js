@@ -433,6 +433,35 @@ describe('vogels-cache',function(){
 
             });
 
+            it('should not try to fetch from DynamoDB if found all in cache',function(done){
+
+                var CacheableBar = VogelsCache.prepare(Bar);
+                var key = 'model-getItems-1';
+                var items = [
+                    {username: key, message:'a'},
+                    {username: key, message:'b'}
+                ];
+
+                createBars(key,['a','b'],true,function(){
+                    CacheableBar.getItems(items,function(err,bars){
+
+                        (!err).should.be.ok;
+
+                        var b0 = bars[0];
+                        (!b0.cached).should.be.ok;
+                        b0.fromCache.should.be.ok;
+
+                        var b1 = bars[1];
+                        (!b1.cached).should.be.ok;
+                        b1.fromCache.should.be.ok;
+
+                        done();
+
+                    });
+                });
+
+            });
+
             it('should search in cache and fallback to DynamoDB by default',function(done){
 
                 var CacheableBar = VogelsCache.prepare(Bar);
@@ -440,7 +469,8 @@ describe('vogels-cache',function(){
                 var items = [
                     {username: key, message:'a'},
                     {username: key, message:'c'}, //don't exist
-                    {username: key, message:'b'}
+                    {username: key, message:'b'},
+                    {username: key, message:'d'} //don't exist
                 ];
 
                 createBar(key,'a',false,function(){ //a is not cached
@@ -448,6 +478,8 @@ describe('vogels-cache',function(){
                         CacheableBar.getItems(items,function(err,bars){
 
                             (!err).should.be.ok;
+
+                            bars.length.should.be.equal(2);
 
                             var b0 = bars[0]; //a not from cache
                             b0.cached.should.be.ok;

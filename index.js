@@ -334,8 +334,10 @@ VogelsCache.prepare = function(schema,config){
 
         var cacheOptions = getCacheOptions(options);
 
-        var fetched = [];
+        var results = [];
         var missing = [];
+        var positionMap = {};
+        var indexCount = 0;
 
         var doOriginal = function(fetchItems){
 
@@ -347,62 +349,55 @@ VogelsCache.prepare = function(schema,config){
                     return callback(err,models);
                 }
 
-                var lastMissing = 0;
                 _.each(models,function(model){
                     if(cacheOptions.CACHE_RESULT){
                         cacheModel(model,cacheOptions.CACHE_EXPIRE);
                     }
 
-                    //fill the placeholders with actual models
                     if(!cacheOptions.CACHE_SKIP){
-                        if(lastMissing < fetched.length){
-                            for(var j=lastMissing;j<fetched.length;j++){
-                                lastMissing = j+1;
-                                if(fetched[j] === SEP){
-                                    fetched[j] = model;
-                                    break;
-                                }
-                            }
-                        }else{
-                            fetched.push(model);
-                        }
-                    }else{
-                        fetched.push(model);
+                        var cacheKey = getModelCacheKey(model);
+                        results[positionMap[cacheKey]] = model;
                     }
 
                 });
-                callback(err,_.without(fetched,SEP));
+
+                if(cacheOptions.CACHE_SKIP){
+                    return callback(err,models);
+                }else{
+                    return callback(null,_.compact(results));
+                }
 
             }])
         };
 
         if(cacheOptions.CACHE_SKIP) return doOriginal(items);
 
-        async.eachSeries(items,function(value,cb){
-            var cacheKey;
+        //try to get each item in cache in parallel
+        async.each(items,function(value,cb){
             if(typeof value === 'string'){
-                cacheKey = getCacheKey(value);
+                var cacheKey = getCacheKey(value);
             }else{
-                cacheKey = getCacheKey(value[hashKey],value[rangeKey]);
+                var cacheKey = getCacheKey(value[hashKey],value[rangeKey]);
             }
+
+            positionMap[cacheKey] = indexCount;
+            indexCount = indexCount + 1;
 
             redis.get(cacheKey,function(err,resp){
                 if(err || !resp){
                     missing.push(value);
-                    //leaves a placeholder that can be filled by dynamodb later
-                    fetched.push(SEP);
                 }else{
                     var item = new CachedSchema(JSONfromCache(resp));
                     item.fromCache = new Date();
-                    fetched.push(item);
+                    results[positionMap[cacheKey]] = item;
                 }
                 cb();
             })
 
         },function(){
 
-            if(!missing.length){
-                return callback(null,fetched);
+            if(missing.length === 0){
+                return callback(null,_.compact(results));
             }
 
             doOriginal(missing);
