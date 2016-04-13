@@ -1,6 +1,6 @@
 var _ = require('lodash');
 var async = require('async');
-var SEP = ':';
+const SEP = ':';
 
 function cacheableJSON(model){
     var json = model.toJSON();
@@ -89,11 +89,38 @@ VogelsCache.prepare = function(schema,config){
 
     var prepareItem = function(item){
         item.save = function(callback){
-            CachedSchema.create(this.attrs,callback);
+            CachedSchema.create(this.attrs,function (err, createdItem) {
+                if(err) {
+                    return callback(err);
+                }
+
+                item.set(createdItem.attrs);
+                item.cached = createdItem.cached;
+
+                return callback(null, createdItem);
+            });
         };
 
         item.update = function(options,callback){
-            CachedSchema.update(this.attrs,options,callback);
+
+            if (typeof options === 'function' && !callback) {
+                callback = options;
+                options = {};
+            }
+
+            options = options || {};
+            callback = callback || _.noop;
+
+            CachedSchema.update(this.attrs,options,function (err, updatedItem) {
+                if(err) {
+                    return callback(err);
+                }
+
+                item.set(updatedItem.attrs);
+                item.cached = updatedItem.cached;
+
+                return callback(null, updatedItem);
+            });
         };
 
         item.destroy = function(options,callback){
@@ -265,7 +292,22 @@ VogelsCache.prepare = function(schema,config){
     };
     CachedSchema.destroy = function(hashKey, rangeKey, options, callback){
 
-        callback = _.findLast(arguments, function(o) { return typeof o === 'function'; }) || _.noop();
+        if (_.isPlainObject(rangeKey) && typeof options === 'function' && !callback) {
+            callback = options;
+            options = rangeKey;
+            rangeKey = null;
+        } else if (typeof rangeKey === 'function' && !callback) {
+            callback = rangeKey;
+            options = {};
+            rangeKey = null;
+        } else if (_.isPlainObject(rangeKey) && !callback) {
+            callback = options;
+            options = rangeKey;
+            rangeKey = null;
+        } else if (typeof options === 'function' && !callback) {
+            callback = options;
+            options = {};
+        }
 
         originalDestroy.apply(schema,[hashKey,rangeKey,options,function(err,model){
 
@@ -273,6 +315,7 @@ VogelsCache.prepare = function(schema,config){
             redis.del(cacheKey);
 
             callback(err,model);
+
         }])
     };
     CachedSchema.query = function(hashKey){

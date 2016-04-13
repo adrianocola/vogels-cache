@@ -72,6 +72,7 @@ Remove item from cache after sucessfull deletion from DynamoDB
 
 ##### .query(), .scan(), .paralellScan()
 By default will cache all items returned in response. If this is not the desired behavior, use the function **.cacheResults(shouldCache,expire)**:
+
 ```js
 CacheableAccount.query('foo').cacheResults(false).exec(function(err,items){
     //items will not be cached
