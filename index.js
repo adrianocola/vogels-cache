@@ -309,6 +309,9 @@ VogelsCache.prepare = function(schema,config){
             options = {};
         }
 
+        callback = callback || _.noop;
+        options = options || {};
+
         originalDestroy.apply(schema,[hashKey,rangeKey,options,function(err,model){
 
             var cacheKey = getCacheKey(hashKey,rangeKey);
