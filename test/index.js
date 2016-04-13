@@ -24,7 +24,11 @@ describe('vogels-cache',function(){
             hashKey : 'username',
             schema : {
                 username: Joi.string(),
-                data: Joi.string()
+                data: Joi.string(),
+                number: Joi.number().integer(),
+                boolean: Joi.boolean(),
+                date: Joi.date(),
+                set   : Vogels.types.stringSet()
             }
         });
 
@@ -751,6 +755,37 @@ describe('vogels-cache',function(){
 
                     done();
 
+
+                });
+
+            })
+
+        });
+
+        it('should preserve types',function(done){
+
+            var CacheableFoo = VogelsCache.prepare(Foo);
+            var key = 'serialization-3';
+            var date = new Date();
+
+            CacheableFoo.create({
+                username: key,
+                data: key,
+                number: 10,
+                boolean: false,
+                set: ['t1','t2','t3']
+            },function(err){
+
+                (!err).should.be.ok;
+
+                CacheableFoo.get(key,function(err,foo){
+
+                    (!err).should.be.ok;
+
+                    foo.get('number').should.be.equal(10);
+                    foo.get('boolean').should.be.equal(false);
+                    foo.get('set').should.be.deepEqual(['t1','t2','t3']);
+                    done();
 
                 });
 
