@@ -11,7 +11,7 @@ function JSONfromCache(string){
 }
 
 function clearCacheOptions(options){
-    //don't mess with dynamo parameters
+    //don't mess with dynamo parameters (don' send ours)
     delete options.CACHE_RESULT;
     delete options.CACHE_SKIP;
     delete options.CACHE_EXPIRE;
@@ -45,6 +45,7 @@ VogelsCache.prepare = function(schema,config){
     var originalTableInitItem = table.initItem;
     var hashKey = sample.table.schema.hashKey;
     var rangeKey = sample.table.schema.rangeKey;
+    var cacheLists = [];
 
     var getCacheKey = function(hash,range){
         return schema.tableName() + SEP + hash + (typeof range === 'string'?SEP + range:'')
@@ -70,6 +71,46 @@ VogelsCache.prepare = function(schema,config){
             multi.expire(cachedKey, expire);
         }
         multi.exec(cb);
+    };
+
+    var cacheListResult = function(key,result,list,expire,cb){
+
+        if(typeof expire === 'function'){
+            cb = expire;
+            expire = null;
+        }
+
+        var listName = getCacheKey(key) + SEP + list;
+
+        result.cached = new Date();
+
+        var multi = redis.multi();
+        multi.set(listName,JSON.stringify(result));
+        if(expire){
+            multi.expire(listName, expire);
+        }
+        multi.exec(cb);
+    };
+
+    var deleteCachedLists = function(modelsOrkeys){
+        if(cacheLists.length){
+            if(!_.isArray(modelsOrkeys)) modelsOrkeys = [modelsOrkeys];
+
+            var keys = [];
+            _.each(modelsOrkeys,function(modelOrKey){
+                var key = typeof modelOrKey === 'string'?modelOrKey:modelOrKey.get(hashKey);
+                if(!_.includes(keys,key)){
+                    keys.push(key);
+                }
+            });
+
+            _.each(keys,function(key){
+                _.each(cacheLists,function(list){
+                    var listName = getCacheKey(key) + SEP + list;
+                    redis.del(listName);
+                });
+            });
+        }
     };
 
     var prepareItem = function(item){
@@ -114,12 +155,14 @@ VogelsCache.prepare = function(schema,config){
         return item;
     };
 
-    var cachedExec = function(haveExec){
+    var cachedExec = function(haveExec,isQuery){
 
         var originalExec = haveExec.exec;
 
         var cacheResult = config.CACHE_RESULT;
         var cacheExpire = config.CACHE_EXPIRE;
+        var cacheList = undefined;
+        var cacheListExpire = config.CACHE_EXPIRE;
 
         haveExec.cacheResults = function(shouldCache,expire){
             cacheResult = shouldCache === true;
@@ -129,16 +172,66 @@ VogelsCache.prepare = function(schema,config){
             return this;
         };
 
+        if(isQuery){
+            haveExec.cacheList = function(list,expire){
+                cacheList = list;
+                cacheListExpire = expire;
+                //don't cache results if caching list (if want to cache results anyway, call .cacheResults after .cacheList)
+                cacheResult = false;
+                if(!_.includes(cacheLists,list)){
+                    cacheLists.push(list);
+                }
+                return this;
+            };
+        }
+
+
+
         haveExec.exec = function(callback){
             callback = callback || function(){};
-            originalExec.call(haveExec,function(err,response){
-                if(!err && cacheResult){
-                    _.each(response.Items,function(model) {
-                        cacheModel(model,cacheExpire);
-                    });
-                }
-                callback(err,response);
-            });
+
+
+            var doOriginal = function(){
+                originalExec.call(haveExec,function(err,response){
+                    if(!err){
+                        if(cacheResult){
+                            _.each(response.Items,function(model) {
+                                cacheModel(model,cacheExpire);
+                            });
+                        }
+                        //don't cache paginated responses
+                        if(isQuery && cacheList && !haveExec.request.ExclusiveStartKey){
+                            cacheListResult(haveExec.hashKey,response,cacheList,cacheListExpire);
+                        }
+                    }
+
+                    callback(err,response);
+                });
+            };
+
+            //only try to get from cache if NOT paginated query
+            if(isQuery && cacheList && !haveExec.request.ExclusiveStartKey){
+                var listName = getCacheKey(haveExec.hashKey) + SEP + cacheList;
+                redis.get(listName,function(err,resp){
+                    if(resp){
+                        var list = JSONfromCache(resp);
+                        var items = [];
+                        _.each(list.Items,function(item){
+                            items.push(new CachedSchema(item));
+                        });
+                        list.Items = items;
+                        list.fromCache = new Date();
+                        return callback(null,list)
+                    }
+
+                    doOriginal();
+
+                });
+            }else{
+                doOriginal();
+            }
+
+
         };
 
         return haveExec;
@@ -249,6 +342,7 @@ VogelsCache.prepare = function(schema,config){
                 }else{
                     cacheModel(model,cacheOptions.CACHE_EXPIRE);
                 }
+                deleteCachedLists(model);
             }
 
             callback(err,model);
@@ -274,6 +368,7 @@ VogelsCache.prepare = function(schema,config){
 
             if(!err && cacheOptions.CACHE_RESULT){
                 cacheModel(model,cacheOptions.CACHE_EXPIRE);
+                deleteCachedLists(model);
             }
 
             callback(err,model);
@@ -307,6 +402,7 @@ VogelsCache.prepare = function(schema,config){
 
             var cacheKey = getCacheKey(hashKey,rangeKey);
             redis.del(cacheKey);
+            deleteCachedLists(hashKey);
 
             callback(err,model);
 
@@ -314,7 +410,7 @@ VogelsCache.prepare = function(schema,config){
     };
     CachedSchema.query = function(hashKey){
         var query = originalQuery.apply(schema,arguments);
-        return cachedExec(query);
+        return cachedExec(query,true);
     };
     CachedSchema.scan = function(hashKey){
         var scan = originalScan.apply(schema,arguments);
