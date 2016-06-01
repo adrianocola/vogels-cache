@@ -68,7 +68,10 @@ Create the item in DynamoDB and then cache it. Accept CACHE_RESULT option to pre
 By default the returned item will be cached. Accept CACHE_RESULT option to prevent caching.
 
 ##### .destroy(hashKey, rangeKey, options, callback)
-Remove item from cache after sucessfull deletion from DynamoDB
+Remove item from cache after sucessfull deletion from DynamoDB.
+
+##### .uncache(hashKey, rangeKey, callback)
+Remove item from cache only.
 
 ##### .query(), .scan(), .paralellScan()
 By default will cache all items returned in response. If this is not the desired behavior, use the function **.cacheResults(shouldCache,expire)**:
@@ -92,6 +95,9 @@ Cache the model after a sucessfull update. Accept CACHE_RESULT option to prevent
 
 ##### .destroy(options,callback)
 Delete the model from cache after destroying.
+
+##### .uncache(callback)
+Removes the model from cache only.
 
 ### How to know if an item was cached or came from cache
 Every item object cached by Vogels-cache will have the property **cached** setted with the time it whas cached. Every item that was fetched from cache will have the property **fromCache** setted to the time it was fetched from cache. Note that those two properties are setted to the Item object.

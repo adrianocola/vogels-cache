@@ -17,6 +17,7 @@ describe('vogels-cache',function(){
 
         this.timeout(5000);
 
+        //start DynamoDB local with: java -jar DynamoDBLocal.jar -inMemory -sharedDb -port 8000
         Vogels.AWS.config.update({endpoint: 'http://localhost:8000', region: 'REGION', accessKeyId: 'abc', secretAccessKey: '123'});
 
         Foo = Vogels.define('foo', {
@@ -402,6 +403,55 @@ describe('vogels-cache',function(){
 
         });
 
+        describe('uncache()',function(){
+
+            it('should cache new model',function(done){
+
+                var key = 'model-uncache-1';
+                var CacheableFoo = VogelsCache.prepare(Foo);
+
+                var foo = CacheableFoo.create({
+                    username: key,
+                    data: 'bar'
+                },function(err){
+
+                    (!err).should.be.ok;
+
+                    redis.exists('foo:'+key,function(err,exist){
+                        (!err).should.be.ok;
+                        exist.should.be.equal(1);
+
+                        CacheableFoo.uncache(key,function(err){
+
+                            (!err).should.be.ok;
+
+                            redis.exists('foo:'+key,function(err,exist){
+                                (!err).should.be.ok;
+                                exist.should.be.equal(0);
+
+                                CacheableFoo.get(key,function(err,foo){
+
+                                    (!err).should.be.ok;
+                                    foo.should.be.ok;
+                                    foo.cached.should.be.ok;
+                                    (!foo.fromCache).should.be.ok;
+
+                                    done();
+
+                                });
+
+                            });
+
+                        });
+
+                    });
+
+                });
+
+            });
+
+        });
+
         describe('getItems()',function(){
 
             it('should cache by default',function(done){
@@ -678,6 +728,48 @@ describe('vogels-cache',function(){
                                 (!err).should.be.ok;
                                 exists.should.be.equal(0);
                                 done();
+                            });
+
+                        });
+
+                    });
+                });
+
+            });
+
+        });
+
+        describe('uncache()',function(){
+
+            it('should remove only from cache',function(done){
+
+                var CacheableFoo = VogelsCache.prepare(Foo);
+                var key = 'item-uncache-1';
+
+                createFoo(key,true,function(){
+                    CacheableFoo.get(key,function(err,foo){
+
+                        (!err).should.be.ok;
+
+                        foo.uncache(function(err){
+
+                            (!err).should.be.ok;
+
+                            redis.exists('foo:'+key,function(err,exists){
+                                (!err).should.be.ok;
+                                exists.should.be.equal(0);
+
+                                CacheableFoo.get(key,function(err,foo){
+
+                                    (!err).should.be.ok;
+                                    foo.should.be.ok;
+                                    foo.cached.should.be.ok;
+                                    (!foo.fromCache).should.be.ok;
+
+                                    done();
+
+                                });
+
                             });
 
                         });

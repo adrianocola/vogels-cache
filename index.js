@@ -111,6 +111,10 @@ VogelsCache.prepare = function(schema,config){
         item.destroy = function(options,callback){
             CachedSchema.destroy(this.attrs[hashKey],this.attrs[rangeKey],options,callback);
         };
+
+        item.uncache = function(callback){
+            CachedSchema.uncache(this.attrs[hashKey],this.attrs[rangeKey],callback);
+        };
         return item;
     };
 
@@ -403,6 +407,19 @@ VogelsCache.prepare = function(schema,config){
             doOriginal(missing);
 
         });
+
+    };
+
+    //removes the model from cache only
+    CachedSchema.uncache = function(hashKey, rangeKey, callback){
+
+        if (typeof rangeKey === 'function' && !callback) {
+            callback = rangeKey;
+            rangeKey = null;
+        }
+
+        var cacheKey = getCacheKey(hashKey,rangeKey);
+        redis.del(cacheKey,callback);
 
     };
 
