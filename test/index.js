@@ -5,7 +5,7 @@ var Joi = require('joi');
 
 var redis = require("fakeredis").createClient();
 
-
+var localDynamo = require('local-dynamo');
 var VogelsCache = require('../index.js');
 VogelsCache.setRedisClient(redis);
 
@@ -17,8 +17,12 @@ describe('vogels-cache',function(){
 
         this.timeout(5000);
 
-        //start DynamoDB local with: java -jar DynamoDBLocal.jar -inMemory -sharedDb -port 8000
-        Vogels.AWS.config.update({endpoint: 'http://localhost:8000', region: 'REGION', accessKeyId: 'abc', secretAccessKey: '123'});
+        localDynamo.launch({
+            port: 4567,
+            sharedDb: true,
+            heap: '512m'
+        });
+        Vogels.AWS.config.update({endpoint: 'http://localhost:4567', region: 'REGION', accessKeyId: 'abc', secretAccessKey: '123'});
 
         Foo = Vogels.define('foo', {
             tableName: 'foo',
@@ -45,7 +49,16 @@ describe('vogels-cache',function(){
                     mood: Joi.string(),
                     free: Joi.boolean().default(false)
                 }
-            }
+            },
+            indexes: [
+                {   //index used to get users that received the package with this packid
+                    hashKey : 'message',
+                    rangeKey : 'username',
+                    name : 'include',
+                    type : 'global',
+                    projection: { NonKeyAttributes: [ 'data' ], ProjectionType: 'INCLUDE' }
+                }
+            ]
         });
 
         Vogels.createTables(done);
@@ -154,6 +167,29 @@ describe('vogels-cache',function(){
 
                 createFoo(key,false,function(){
                     CacheableFoo.get(key,{CACHE_SKIP:true,CACHE_RESULT:false},function(err,foo){
+
+                        (!err).should.be.ok;
+                        (!foo.cached).should.be.ok;
+                        (!foo.fromCache).should.be.ok;
+
+                        redis.exists('foo:'+key,function(err,exist){
+                            (!err).should.be.ok;
+                            exist.should.be.equal(0);
+                            done();
+                        });
+
+                    });
+                });
+
+            });
+
+            it('should not save to cache if AttributesToGet is used',function(done){
+
+                var CacheableFoo = VogelsCache.prepare(Foo);
+                var key = 'model-get-6';
+
+                createFoo(key,false,function(){
+                    CacheableFoo.get(key,{AttributesToGet:'number'},function(err,foo){
 
                         (!err).should.be.ok;
                         (!foo.cached).should.be.ok;
@@ -351,7 +387,32 @@ describe('vogels-cache',function(){
 
         describe('query()',function(){
 
-            it('should cache by default',function(done){
+            it('should not cache by default',function(done){
+
+                var CacheableBar = VogelsCache.prepare(Bar);
+                var key = 'model-query-3';
+
+                createBars(key,['a','b'],false,function(){
+                    CacheableBar.query(key).cacheResults(false).exec(function(err,bars){
+
+                        (!err).should.be.ok;
+
+                        var b0 = bars.Items[0];
+                        (!b0.cached).should.be.ok;
+                        (!b0.fromCache).should.be.ok;
+
+                        var b1 = bars.Items[1];
+                        (!b1.cached).should.be.ok;
+                        (!b1.fromCache).should.be.ok;
+
+                        done();
+
+                    });
+                });
+
+            });
+
+            it('should cache if called cacheResults(true) in query',function(done){
 
                 var CacheableBar = VogelsCache.prepare(Bar);
                 var key = 'model-query-1';
@@ -367,31 +428,6 @@ describe('vogels-cache',function(){
 
                         var b1 = bars.Items[1];
                         b1.cached.should.be.ok;
-                        (!b1.fromCache).should.be.ok;
-
-                        done();
-
-                    });
-                });
-
-            });
-
-            it('should not cache if called cacheResults(false) in query',function(done){
-
-                var CacheableBar = VogelsCache.prepare(Bar);
-                var key = 'model-query-2';
-
-                createBars(key,['a','b'],false,function(){
-                    CacheableBar.query(key).cacheResults(false).exec(function(err,bars){
-
-                        (!err).should.be.ok;
-
-                        var b0 = bars.Items[0];
-                        (!b0.cached).should.be.ok;
-                        (!b0.fromCache).should.be.ok;
-
-                        var b1 = bars.Items[1];
-                        (!b1.cached).should.be.ok;
                         (!b1.fromCache).should.be.ok;
 
                         done();
