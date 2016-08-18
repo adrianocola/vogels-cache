@@ -122,7 +122,7 @@ VogelsCache.prepare = function(schema,config){
 
         var originalExec = haveExec.exec;
 
-        var cacheResult = config.CACHE_RESULT;
+        var cacheResult = false;
         var cacheExpire = config.CACHE_EXPIRE;
 
         haveExec.cacheResults = function(shouldCache,expire){
@@ -151,7 +151,7 @@ VogelsCache.prepare = function(schema,config){
 
     var getCacheOptions = function(options){
         return {
-            CACHE_RESULT: _.isNil(options.CACHE_RESULT)?config.CACHE_RESULT:options.CACHE_RESULT,
+            CACHE_RESULT: _.isNil(options.CACHE_RESULT)?config.CACHE_RESULT && !options.AttributesToGet:options.CACHE_RESULT,
             CACHE_SKIP: _.isNil(options.CACHE_SKIP)?config.CACHE_SKIP:options.CACHE_SKIP,
             CACHE_EXPIRE: _.isNil(options.CACHE_EXPIRE)?config.CACHE_EXPIRE:options.CACHE_EXPIRE
         };

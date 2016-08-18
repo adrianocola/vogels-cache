@@ -114,8 +114,8 @@ describe('vogels-cache',function(){
                 createFoo(key,true,function(){
                     CacheableFoo.get(key,function(err,foo){
 
-                        (!err).should.be.ok;
-                        (!foo.cached).should.be.ok;
+                        should.not.exist(err);
+                        should.not.exist(foo.cached);
                         foo.fromCache.should.be.ok;
                         done();
 
@@ -132,9 +132,9 @@ describe('vogels-cache',function(){
                 createFoo(key,false,function(){
                     CacheableFoo.get(key,function(err,foo){
 
-                        (!err).should.be.ok;
+                        should.not.exist(err);
                         foo.cached.should.be.ok;
-                        (!foo.fromCache).should.be.ok;
+                        should.not.exist(foo.fromCache);
                         done();
 
                     });
@@ -150,9 +150,9 @@ describe('vogels-cache',function(){
                 createFoo(key,true,function(){
                     CacheableFoo.get(key,{CACHE_SKIP:true},function(err,foo){
 
-                        (!err).should.be.ok;
+                        should.not.exist(err);
                         foo.cached.should.be.ok;
-                        (!foo.fromCache).should.be.ok;
+                        should.not.exist(foo.fromCache);
                         done();
 
                     });
@@ -168,12 +168,12 @@ describe('vogels-cache',function(){
                 createFoo(key,false,function(){
                     CacheableFoo.get(key,{CACHE_SKIP:true,CACHE_RESULT:false},function(err,foo){
 
-                        (!err).should.be.ok;
-                        (!foo.cached).should.be.ok;
-                        (!foo.fromCache).should.be.ok;
+                        should.not.exist(err);
+                        should.not.exist(foo.cached);
+                        should.not.exist(foo.fromCache);
 
                         redis.exists('foo:'+key,function(err,exist){
-                            (!err).should.be.ok;
+                            should.not.exist(err);
                             exist.should.be.equal(0);
                             done();
                         });
@@ -191,12 +191,12 @@ describe('vogels-cache',function(){
                 createFoo(key,false,function(){
                     CacheableFoo.get(key,{AttributesToGet:'number'},function(err,foo){
 
-                        (!err).should.be.ok;
-                        (!foo.cached).should.be.ok;
-                        (!foo.fromCache).should.be.ok;
+                        should.not.exist(err);
+                        should.not.exist(foo.cached);
+                        should.not.exist(foo.fromCache);
 
                         redis.exists('foo:'+key,function(err,exist){
-                            (!err).should.be.ok;
+                            should.not.exist(err);
                             exist.should.be.equal(0);
                             done();
                         });
@@ -220,10 +220,10 @@ describe('vogels-cache',function(){
                     data: 'bar'
                 },function(err){
 
-                    (!err).should.be.ok;
+                    should.not.exist(err);
 
                     redis.exists('foo:'+key,function(err,exist){
-                        (!err).should.be.ok;
+                        should.not.exist(err);
                         exist.should.be.equal(1);
                         done();
                     })
@@ -249,14 +249,14 @@ describe('vogels-cache',function(){
                     }
                 ],function(err){
 
-                    (!err).should.be.ok;
+                    should.not.exist(err);
 
                     redis.exists('foo:'+key1,function(err,exist){
-                        (!err).should.be.ok;
+                        should.not.exist(err);
                         exist.should.be.equal(1);
 
                         redis.exists('foo:'+key2,function(err,exist){
-                            (!err).should.be.ok;
+                            should.not.exist(err);
                             exist.should.be.equal(1);
                             done();
                         })
@@ -278,7 +278,7 @@ describe('vogels-cache',function(){
                 },{CACHE_RESULT: false},function(){
 
                     redis.exists('foo:'+key,function(err,exist){
-                        (!err).should.be.ok;
+                        should.not.exist(err);
                         exist.should.be.equal(0);
                         done();
                     })
@@ -299,7 +299,7 @@ describe('vogels-cache',function(){
                 },{CACHE_EXPIRE: expire},function(){
 
                     redis.ttl('foo:'+key,function(err,ttl){
-                        (!err).should.be.ok;
+                        should.not.exist(err);
                         ttl.should.be.equal(expire);
                         done();
                     })
@@ -320,12 +320,12 @@ describe('vogels-cache',function(){
                 createFoo(key,false,function(){
                     CacheableFoo.update({username: key,data:'updated'},function(err,foo){
 
-                        (!err).should.be.ok;
+                        should.not.exist(err);
                         foo.cached.should.be.ok;
-                        (!foo.fromCache).should.be.ok;
+                        should.not.exist(foo.fromCache);
 
                         redis.exists('foo:'+key,function(err,exist){
-                            (!err).should.be.ok;
+                            should.not.exist(err);
                             exist.should.be.equal(1);
                             done();
                         });
@@ -343,12 +343,12 @@ describe('vogels-cache',function(){
                 createFoo(key,true,function(){
                     CacheableFoo.update({username: key,data:'updated'},{CACHE_RESULT:false},function(err,foo){
 
-                        (!err).should.be.ok;
-                        (!foo.cached).should.be.ok;
-                        (!foo.fromCache).should.be.ok;
+                        should.not.exist(err);
+                        should.not.exist(foo.cached);
+                        should.not.exist(foo.fromCache);
 
                         redis.get('foo:'+key,function(err,data){
-                            (!err).should.be.ok;
+                            should.not.exist(err);
                             data.indexOf('updated').should.be.equal(-1); //should be equal old cached value
                             done();
                         });
@@ -370,10 +370,10 @@ describe('vogels-cache',function(){
                 createFoo(key,true,function(){
                     CacheableFoo.destroy(key,function(err){
 
-                        (!err).should.be.ok;
+                        should.not.exist(err);
 
                         redis.exists('foo:'+key,function(err,exist){
-                            (!err).should.be.ok;
+                            should.not.exist(err);
                             exist.should.be.equal(0);
                             done();
                         });
@@ -390,20 +390,20 @@ describe('vogels-cache',function(){
             it('should not cache by default',function(done){
 
                 var CacheableBar = VogelsCache.prepare(Bar);
-                var key = 'model-query-3';
+                var key = 'model-query-1';
 
                 createBars(key,['a','b'],false,function(){
-                    CacheableBar.query(key).cacheResults(false).exec(function(err,bars){
+                    CacheableBar.query(key).exec(function(err,bars){
 
-                        (!err).should.be.ok;
+                        should.not.exist(err);
 
                         var b0 = bars.Items[0];
-                        (!b0.cached).should.be.ok;
-                        (!b0.fromCache).should.be.ok;
+                        should.not.exist(b0.cached);
+                        should.not.exist(b0.fromCache);
 
                         var b1 = bars.Items[1];
-                        (!b1.cached).should.be.ok;
-                        (!b1.fromCache).should.be.ok;
+                        should.not.exist(b1.cached);
+                        should.not.exist(b1.fromCache);
 
                         done();
 
@@ -415,20 +415,20 @@ describe('vogels-cache',function(){
             it('should cache if called cacheResults(true) in query',function(done){
 
                 var CacheableBar = VogelsCache.prepare(Bar);
-                var key = 'model-query-1';
+                var key = 'model-query-2';
 
                 createBars(key,['a','b'],false,function(){
-                    CacheableBar.query(key).exec(function(err,bars){
+                    CacheableBar.query(key).cacheResults(true).exec(function(err,bars){
 
-                        (!err).should.be.ok;
+                        should.not.exist(err);
 
                         var b0 = bars.Items[0];
                         b0.cached.should.be.ok;
-                        (!b0.fromCache).should.be.ok;
+                        should.not.exist(b0.fromCache);
 
                         var b1 = bars.Items[1];
                         b1.cached.should.be.ok;
-                        (!b1.fromCache).should.be.ok;
+                        should.not.exist(b1.fromCache);
 
                         done();
 
@@ -451,26 +451,26 @@ describe('vogels-cache',function(){
                     data: 'bar'
                 },function(err){
 
-                    (!err).should.be.ok;
+                    should.not.exist(err);
 
                     redis.exists('foo:'+key,function(err,exist){
-                        (!err).should.be.ok;
+                        should.not.exist(err);
                         exist.should.be.equal(1);
 
                         CacheableFoo.uncache(key,function(err){
 
-                            (!err).should.be.ok;
+                            should.not.exist(err);
 
                             redis.exists('foo:'+key,function(err,exist){
-                                (!err).should.be.ok;
+                                should.not.exist(err);
                                 exist.should.be.equal(0);
 
                                 CacheableFoo.get(key,function(err,foo){
 
-                                    (!err).should.be.ok;
+                                    should.not.exist(err);
                                     foo.should.be.ok;
                                     foo.cached.should.be.ok;
-                                    (!foo.fromCache).should.be.ok;
+                                    should.not.exist(foo.fromCache);
 
                                     done();
 
@@ -502,15 +502,15 @@ describe('vogels-cache',function(){
                 createBars(key,['a','b'],false,function(){
                     CacheableBar.getItems(items,function(err,bars){
 
-                        (!err).should.be.ok;
+                        should.not.exist(err);
 
                         var b0 = bars[0];
                         b0.cached.should.be.ok;
-                        (!b0.fromCache).should.be.ok;
+                        should.not.exist(b0.fromCache);
 
                         var b1 = bars[1];
                         b1.cached.should.be.ok;
-                        (!b1.fromCache).should.be.ok;
+                        should.not.exist(b1.fromCache);
 
                         done();
 
@@ -531,14 +531,14 @@ describe('vogels-cache',function(){
                 createBars(key,['a','b'],true,function(){
                     CacheableBar.getItems(items,function(err,bars){
 
-                        (!err).should.be.ok;
+                        should.not.exist(err);
 
                         var b0 = bars[0];
-                        (!b0.cached).should.be.ok;
+                        should.not.exist(b0.cached);
                         b0.fromCache.should.be.ok;
 
                         var b1 = bars[1];
-                        (!b1.cached).should.be.ok;
+                        should.not.exist(b1.cached);
                         b1.fromCache.should.be.ok;
 
                         done();
@@ -563,16 +563,16 @@ describe('vogels-cache',function(){
                     createBar(key,'b',true,function(){ //b is cached
                         CacheableBar.getItems(items,function(err,bars){
 
-                            (!err).should.be.ok;
+                            should.not.exist(err);
 
                             bars.length.should.be.equal(2);
 
                             var b0 = bars[0]; //a not from cache
                             b0.cached.should.be.ok;
-                            (!b0.fromCache).should.be.ok;
+                            should.not.exist(b0.fromCache);
 
                             var b1 = bars[1]; //b from cache
-                            (!b1.cached).should.be.ok;
+                            should.not.exist(b1.cached);
                             b1.fromCache.should.be.ok;
 
                             done();
@@ -595,15 +595,15 @@ describe('vogels-cache',function(){
                 createBars(key,['a','b'],true,function(){ //is in cache
                     CacheableBar.getItems(items,{CACHE_SKIP:true},function(err,bars){
 
-                        (!err).should.be.ok;
+                        should.not.exist(err);
 
                         var b0 = bars[0];
                         b0.cached.should.be.ok;
-                        (!b0.fromCache).should.be.ok;
+                        should.not.exist(b0.fromCache);
 
                         var b1 = bars[1];
                         b1.cached.should.be.ok;
-                        (!b1.fromCache).should.be.ok;
+                        should.not.exist(b1.fromCache);
 
                         done();
 
@@ -624,21 +624,21 @@ describe('vogels-cache',function(){
                 createBars(key,['a','b'],false,function(){
                     CacheableBar.getItems(items,{CACHE_RESULT:false},function(err,bars){
 
-                        (!err).should.be.ok;
+                        should.not.exist(err);
 
                         var b0 = bars[0];
-                        (!b0.cached).should.be.ok;
-                        (!b0.fromCache).should.be.ok;
+                        should.not.exist(b0.cached);
+                        should.not.exist(b0.fromCache);
 
                         var b1 = bars[1];
-                        (!b1.cached).should.be.ok;
-                        (!b1.fromCache).should.be.ok;
+                        should.not.exist(b1.cached);
+                        should.not.exist(b1.fromCache);
 
                         redis.exists('foo:'+key+':a',function(err,exist){
-                            (!err).should.be.ok;
+                            should.not.exist(err);
                             exist.should.be.equal(0);
                             redis.exists('foo:'+key+':b',function(err,exist){
-                                (!err).should.be.ok;
+                                should.not.exist(err);
                                 exist.should.be.equal(0);
                                 done();
                             });
@@ -668,11 +668,11 @@ describe('vogels-cache',function(){
                 });
                 foo.save(function(err){
 
-                    (!err).should.be.ok;
+                    should.not.exist(err);
                     foo.cached.should.be.ok;
 
                     redis.exists('foo:'+key,function(err,exist){
-                        (!err).should.be.ok;
+                        should.not.exist(err);
                         exist.should.be.ok;
                         done();
                     })
@@ -693,16 +693,16 @@ describe('vogels-cache',function(){
                 createFoo(key,true,function(){
                     CacheableFoo.get(key,function(err,foo){
 
-                        (!err).should.be.ok;
+                        should.not.exist(err);
 
                         foo.set({data: 'new value'});
                         foo.update(function(err){
 
-                            (!err).should.be.ok;
+                            should.not.exist(err);
                             foo.cached.should.be.ok;
 
                             redis.get('foo:'+key,function(err,data){
-                                (!err).should.be.ok;
+                                should.not.exist(err);
                                 data.indexOf('new value').should.not.be.equal(-1);
                                 done();
                             });
@@ -722,15 +722,15 @@ describe('vogels-cache',function(){
                 createFoo(key,true,function(){
                     CacheableFoo.get(key,function(err,foo){
 
-                        (!err).should.be.ok;
+                        should.not.exist(err);
 
                         foo.set({data: 'new value'});
                         foo.update({CACHE_RESULT:false},function(err){
 
-                            (!err).should.be.ok;
+                            should.not.exist(err);
 
                             redis.get('foo:'+key,function(err,data){
-                                (!err).should.be.ok;
+                                should.not.exist(err);
                                 data.indexOf('new value').should.be.equal(-1);
                                 done();
                             });
@@ -754,14 +754,14 @@ describe('vogels-cache',function(){
                 createFoo(key,true,function(){
                     CacheableFoo.get(key,function(err,foo){
 
-                        (!err).should.be.ok;
+                        should.not.exist(err);
 
                         foo.destroy(function(err){
 
-                            (!err).should.be.ok;
+                            should.not.exist(err);
 
                             redis.exists('foo:'+key,function(err,exists){
-                                (!err).should.be.ok;
+                                should.not.exist(err);
                                 exists.should.be.equal(0);
                                 done();
                             });
@@ -785,22 +785,22 @@ describe('vogels-cache',function(){
                 createFoo(key,true,function(){
                     CacheableFoo.get(key,function(err,foo){
 
-                        (!err).should.be.ok;
+                        should.not.exist(err);
 
                         foo.uncache(function(err){
 
-                            (!err).should.be.ok;
+                            should.not.exist(err);
 
                             redis.exists('foo:'+key,function(err,exists){
-                                (!err).should.be.ok;
+                                should.not.exist(err);
                                 exists.should.be.equal(0);
 
                                 CacheableFoo.get(key,function(err,foo){
 
-                                    (!err).should.be.ok;
+                                    should.not.exist(err);
                                     foo.should.be.ok;
                                     foo.cached.should.be.ok;
-                                    (!foo.fromCache).should.be.ok;
+                                    should.not.exist(foo.fromCache);
 
                                     done();
 
@@ -831,15 +831,15 @@ describe('vogels-cache',function(){
                 data: key
             },{CACHE_EXPIRE:1},function(err){
 
-                (!err).should.be.ok;
+                should.not.exist(err);
 
                 redis.exists('foo:'+key,function(err,exist){
-                    (!err).should.be.ok;
+                    should.not.exist(err);
                     exist.should.be.ok; //is in cache
                     setTimeout(function(){
 
                         redis.exists('foo:'+key,function(err,exist){
-                            (!err).should.be.ok;
+                            should.not.exist(err);
                             (!exist).should.be.ok; //should not be in cache anymore
                             done();
                         })
@@ -868,11 +868,11 @@ describe('vogels-cache',function(){
                 set: ['t1','t2','t3']
             },function(err){
 
-                (!err).should.be.ok;
+                should.not.exist(err);
 
                 CacheableFoo.get(key,function(err,foo){
 
-                    (!err).should.be.ok;
+                    should.not.exist(err);
 
                     foo.fromCache.should.be.ok;
 
