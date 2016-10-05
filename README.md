@@ -65,7 +65,7 @@ Will try to get item from cache and fallback to DynamoDB. Accept options CACHE_S
 Create the item in DynamoDB and then cache it. Accept CACHE_RESULT option to prevent caching.
 
 ##### .update(item, options, callback)
-By default the returned item will be cached. Accept CACHE_RESULT option to prevent caching.
+The returned item will NOT be cached and the item will be removed from cache (if it exists).
 
 ##### .destroy(hashKey, rangeKey, options, callback)
 Remove item from cache after sucessfull deletion from DynamoDB.
@@ -91,7 +91,7 @@ Item methods also have other behaviors in they cacheable version (they also shar
 Cache the model after a sucessfull save. This method dont't allow options (just like Vogels).
 
 ##### .update(options,callback)
-Cache the model after a sucessfull update. Accept CACHE_RESULT option to prevent caching.
+The updated version of the model is not cached and if there is a cached version of this item, it will be removed from cache.
 
 ##### .destroy(options,callback)
 Delete the model from cache after destroying.
@@ -108,6 +108,12 @@ CacheableAccount.get('foo',{CACHE_SKIP:true},function(err,item){
     item.get('email'); //item data
 });
 ```
+
+### Changelog
+
+* **1.6**
+    * Don't cache updates anymore. And the item will be removed from cache after a successful update.
+
 ### License
 
 (The MIT License)

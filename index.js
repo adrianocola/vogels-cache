@@ -270,14 +270,15 @@ VogelsCache.prepare = function(schema,config){
         callback = callback || _.noop;
         options = options || {};
 
-        var cacheOptions = getCacheOptions(options);
-
-        clearCacheOptions(options);
-
         originalUpdate.apply(schema,[item,options,function(err,model){
 
-            if(!err && cacheOptions.CACHE_RESULT){
-                cacheModel(model,cacheOptions.CACHE_EXPIRE);
+            if(!err){
+                if(rangeKey){
+                    var cacheKey = getCacheKey(item[hashKey],item[rangeKey]);
+                }else{
+                    var cacheKey = getCacheKey(item[hashKey]);
+                }
+                redis.del(cacheKey);
             }
 
             callback(err,model);

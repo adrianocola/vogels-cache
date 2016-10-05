@@ -312,48 +312,33 @@ describe('vogels-cache',function(){
 
         describe('update()',function(){
 
-            it('should cache by default',function(done){
+            it('should not cache and delete from cache after update',function(done){
 
                 var CacheableFoo = VogelsCache.prepare(Foo);
                 var key = 'model-update-1';
 
-                createFoo(key,false,function(){
-                    CacheableFoo.update({username: key,data:'updated'},function(err,foo){
-
-                        should.not.exist(err);
-                        foo.cached.should.be.ok;
-                        should.not.exist(foo.fromCache);
-
-                        redis.exists('foo:'+key,function(err,exist){
-                            should.not.exist(err);
-                            exist.should.be.equal(1);
-                            done();
-                        });
-
-                    });
-                });
-
-            });
-
-            it('should NOT cache if CACHE_RESULT:false passed as option',function(done){
-
-                var CacheableFoo = VogelsCache.prepare(Foo);
-                var key = 'model-update-2';
-
                 createFoo(key,true,function(){
-                    CacheableFoo.update({username: key,data:'updated'},{CACHE_RESULT:false},function(err,foo){
 
+                    redis.exists('foo:'+key,function(err,exist){
                         should.not.exist(err);
-                        should.not.exist(foo.cached);
-                        should.not.exist(foo.fromCache);
+                        exist.should.be.equal(1);
 
-                        redis.get('foo:'+key,function(err,data){
+                        CacheableFoo.update({username: key,data:'updated'},function(err,foo){
+
                             should.not.exist(err);
-                            data.indexOf('updated').should.be.equal(-1); //should be equal old cached value
-                            done();
+                            should.not.exist(foo.cached);
+                            should.not.exist(foo.fromCache);
+
+                            redis.exists('foo:'+key,function(err,exist){
+                                should.not.exist(err);
+                                exist.should.be.equal(0);
+                                done();
+                            });
+
                         });
 
                     });
+
                 });
 
             });
@@ -685,59 +670,40 @@ describe('vogels-cache',function(){
 
         describe('update()',function(){
 
-            it('should cache by default',function(done){
+            it('should not cache and delete from cache after update',function(done){
 
                 var CacheableFoo = VogelsCache.prepare(Foo);
                 var key = 'item-update-1';
 
                 createFoo(key,true,function(){
-                    CacheableFoo.get(key,function(err,foo){
 
+                    redis.exists('foo:'+key,function(err,exists){
                         should.not.exist(err);
+                        exists.should.be.equal(1);
 
-                        foo.set({data: 'new value'});
-                        foo.update(function(err){
+                        CacheableFoo.get(key,function(err,foo){
 
                             should.not.exist(err);
-                            foo.cached.should.be.ok;
 
-                            redis.get('foo:'+key,function(err,data){
+                            foo.set({data: 'new value'});
+                            foo.update(function(err){
+
                                 should.not.exist(err);
-                                data.indexOf('new value').should.not.be.equal(-1);
-                                done();
+                                should.not.exist(foo.cached);
+
+                                redis.exists('foo:'+key,function(err,exists){
+                                    should.not.exist(err);
+                                    exists.should.be.equal(0);
+                                    done();
+                                });
+
                             });
 
                         });
 
                     });
-                });
 
-            });
 
-            it('should not cache if CACHE_RESULT:false is set',function(done){
-
-                var CacheableFoo = VogelsCache.prepare(Foo);
-                var key = 'item-update-2';
-
-                createFoo(key,true,function(){
-                    CacheableFoo.get(key,function(err,foo){
-
-                        should.not.exist(err);
-
-                        foo.set({data: 'new value'});
-                        foo.update({CACHE_RESULT:false},function(err){
-
-                            should.not.exist(err);
-
-                            redis.get('foo:'+key,function(err,data){
-                                should.not.exist(err);
-                                data.indexOf('new value').should.be.equal(-1);
-                                done();
-                            });
-
-                        });
-
-                    });
                 });
 
             });
