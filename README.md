@@ -1,6 +1,6 @@
 # vogels-cache [![Build Status](https://travis-ci.org/adrianocola/vogels-cache.png?branch=master)](https://travis-ci.org/adrianocola/vogels-cache)
 
-Vogels-cache adds a cache layer (backed by [Redis](http://redis.io/)) to your [Vogels](https://github.com/ryanfitz/vogels) models.
+Vogels-cache adds a cache layer (backed by [Redis](http://redis.io/)) to your [Vogels](https://github.com/ryanfitz/vogels) or [Dynogels](https://github.com/clarkie/dynogels) models.
 
 ## Installation
 
@@ -13,7 +13,7 @@ var redis = require("redis").createClient();
 var vogelsCache = require('vogels-cache');
 vogelsCache.setRedisClient(redis);
 ```
-Then you can use Vogels-cache to create cacheable version of a Vogel model (the original Model will not be altered):
+Then you can use Vogels-cache to create cacheable version of a Vogels or Dynogels model (the original Model will not be altered):
 ```js
 var vogels = require('vogels');
 //do vogels setup
@@ -110,7 +110,8 @@ CacheableAccount.get('foo',{CACHE_SKIP:true},function(err,item){
 ```
 
 ### Changelog
-
+* **1.7**
+    * Added support to Dynogels
 * **1.6**
     * Don't cache updates anymore. And the item will be removed from cache after a successful update.
 

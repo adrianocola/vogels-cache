@@ -3,21 +3,24 @@ var Vogels = require('vogels');
 var async = require('async');
 var Joi = require('joi');
 
-var redis = require("fakeredis").createClient();
+var redis;
 
-var localDynamo = require('local-dynamo');
-var VogelsCache = require('../index.js');
-VogelsCache.setRedisClient(redis);
+var VogelsCache;
 
 var Foo,Bar;
 
-describe('vogels-cache',function(){
+describe('vogels',function(){
 
     before(function(done){
 
         this.timeout(5000);
 
-        localDynamo.launch({
+        redis = require("fakeredis").createClient();
+
+        VogelsCache = require('../index.js');
+        VogelsCache.setRedisClient(redis);
+
+        require('local-dynamo').launch({
             port: 4567,
             sharedDb: true,
             heap: '512m'
