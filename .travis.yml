@@ -5,8 +5,8 @@ language: node_js
 node_js:
   - 4
   - 5
-  - 0.10
-  - 0.12
+  - 6
+  - 7
 
 env:
 before_script:

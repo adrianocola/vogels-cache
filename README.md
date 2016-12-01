@@ -110,6 +110,8 @@ CacheableAccount.get('foo',{CACHE_SKIP:true},function(err,item){
 ```
 
 ### Changelog
+* **1.7.1**
+    * Minimum node version supported is now 4.0.0
 * **1.7**
     * Added support to Dynogels
 * **1.6**
