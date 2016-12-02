@@ -1,6 +1,6 @@
 {
   "name": "vogels-cache",
-  "version": "1.7.1",
+  "version": "1.8.0",
   "author": "Adriano Cola <adriano@ensemble.com.br>",
   "description": "Redis backed cache for Vogels or Dynogels(DynamoDB data mapper)",
   "main": "index.js",

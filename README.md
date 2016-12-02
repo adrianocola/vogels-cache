@@ -59,13 +59,13 @@ CacheableAccount.get('foo@bar.com',{CACHE_SKIP:true,CACHE_RESULT:false},function
 This is the behavior of each method will have when using its cacheable version (the methods have the same signature as the uncached Vogels Model):
 
 ##### .get(hashKey, rangeKey, options, callback)
-Will try to get item from cache and fallback to DynamoDB. Accept options CACHE_SKIP and CACHE_RESULT to change this behavior.
+Will try to get item from cache and fallback to DynamoDB. After retrieving the item from DynamoDB, cache it. Accept options CACHE_SKIP:true and CACHE_RESULT:false to change this behavior.
 
 ##### .create(attrs,options,callback)
-Create the item in DynamoDB and then cache it. Accept CACHE_RESULT option to prevent caching.
+Create the item in DynamoDB and then cache it. Accept CACHE_RESULT:false option to prevent caching.
 
 ##### .update(item, options, callback)
-The returned item will NOT be cached and the item will be removed from cache (if it exists).
+The returned item will NOT be cached and the item will be removed from cache (if it exists). You can change this behavior by sending CACHE_RESULT:true as an option.
 
 ##### .destroy(hashKey, rangeKey, options, callback)
 Remove item from cache after sucessfull deletion from DynamoDB.
@@ -82,7 +82,7 @@ CacheableAccount.query('foo').cacheResults(true).exec(function(err,items){
 });
 ```
 ##### getItems(keys, options, callback)
-First try to get all items from cache and then get missing ones from Dynamo. Tries to keep the returned items in order based on the requested keys order. Add option CACHE_SKIP to fetch directly from Dynamo. Also accept CACHE_RESULT option to prevent caching results.
+First try to get all items from cache and then get missing ones from Dynamo. Tries to keep the returned items in order based on the requested keys order. Add option CACHE_SKIP:true to fetch directly from Dynamo. Also accept CACHE_RESULT:false option to prevent caching results.
 
 ### Item Methods
 Item methods also have other behaviors in they cacheable version (they also share the same method signature of the original Vogels Item):
@@ -91,7 +91,7 @@ Item methods also have other behaviors in they cacheable version (they also shar
 Cache the model after a sucessfull save. This method dont't allow options (just like Vogels).
 
 ##### .update(options,callback)
-The updated version of the model is not cached and if there is a cached version of this item, it will be removed from cache.
+The updated version of the model is not cached and if there is a cached version of this item, it will be removed from cache. You can change this behavior by sending CACHE_RESULT:true as an option.
 
 ##### .destroy(options,callback)
 Delete the model from cache after destroying.
@@ -109,7 +109,14 @@ CacheableAccount.get('foo',{CACHE_SKIP:true},function(err,item){
 });
 ```
 
+### Caveats
+
+* **GET MODIFICATORS**: Be careful when caching .get() results with AttributesToGet or ProjectionExpression. Use options CACHE_RESULT and CACHE_SKIP to achieve the desired results
+* **CACHING UPDATES**: If you want to cache with an .update() use the option CACHE_RESULT:true, but be carefull with the parameter ReturnValues (NONE | ALL_OLD | UPDATED_OLD | ALL_NEW | UPDATED_NEW). That is why the default behavior is to NOT cache updates requests.
+
 ### Changelog
+* **1.8.0**
+    * Added option CACHE_RESULT to .update() to force caching updates per request
 * **1.7.1**
     * Minimum node version supported is now 4.0.0
 * **1.7**
