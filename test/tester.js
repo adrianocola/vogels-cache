@@ -1,3 +1,5 @@
+"use strict";
+
 var should = require('should');
 var Vogels = require('vogels');
 var Dynogels = require('dynogels');

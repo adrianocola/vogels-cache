@@ -1,3 +1,5 @@
+"use strict";
+
 var Tester = require('./tester');
 
 var tester;
