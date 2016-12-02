@@ -1,6 +1,6 @@
 var Tester = require('./tester');
 
-let tester;
+var tester;
 
 describe('vogels',function(){
 
