@@ -36,25 +36,25 @@ VogelsCache.prepare = function(schema,config){
             CACHE_EXPIRE: undefined
         });
 
-    let redis = config.redis || this.redis;
+    var redis = config.redis || this.redis;
 
     //Vogels don't expose the schema definition to the Model, so we need to
     // create a sample model to get the schema configuration.
-    let sample = new schema();
-    let table = sample.table;
-    let originalTableInitItem = table.initItem;
-    let hashKey = sample.table.schema.hashKey;
-    let rangeKey = sample.table.schema.rangeKey;
+    var sample = new schema();
+    var table = sample.table;
+    var originalTableInitItem = table.initItem;
+    var hashKey = sample.table.schema.hashKey;
+    var rangeKey = sample.table.schema.rangeKey;
 
-    let getCacheKey = function(hash,range){
+    var getCacheKey = function(hash,range){
         return schema.tableName() + SEP + hash + (typeof range === 'string'?SEP + range:'')
     };
 
-    let getModelCacheKey = function(model){
+    var getModelCacheKey = function(model){
         return getCacheKey(model.get(hashKey),model.get(rangeKey));
     };
 
-    let cacheModel = function(model,expire,cb){
+    var cacheModel = function(model,expire,cb){
 
         if(typeof expire === 'function'){
             cb = expire;
@@ -63,8 +63,8 @@ VogelsCache.prepare = function(schema,config){
 
         //mark the model as cached
         model.cached = new Date();
-        let cachedKey = getModelCacheKey(model);
-        let multi = redis.multi();
+        var cachedKey = getModelCacheKey(model);
+        var multi = redis.multi();
         multi.set(cachedKey,JSON.stringify(model.toJSON()));
         if(expire){
             multi.expire(cachedKey, expire);
@@ -72,7 +72,7 @@ VogelsCache.prepare = function(schema,config){
         multi.exec(cb);
     };
 
-    let prepareItem = function(item){
+    var prepareItem = function(item){
         item.save = function(callback){
             CachedSchema.create(this.attrs,function (err, createdItem) {
                 if(err) {
@@ -118,12 +118,12 @@ VogelsCache.prepare = function(schema,config){
         return item;
     };
 
-    let cachedExec = function(haveExec){
+    var cachedExec = function(haveExec){
 
-        let originalExec = haveExec.exec;
+        var originalExec = haveExec.exec;
 
-        let cacheResult = false;
-        let cacheExpire = config.CACHE_EXPIRE;
+        var cacheResult = false;
+        var cacheExpire = config.CACHE_EXPIRE;
 
         haveExec.cacheResults = function(shouldCache,expire){
             cacheResult = shouldCache === true;
@@ -160,25 +160,25 @@ VogelsCache.prepare = function(schema,config){
     //wrap default item creation to add cache methods
     table.initItem = function(){
 
-        let item = originalTableInitItem.apply(table,arguments);
+        var item = originalTableInitItem.apply(table,arguments);
 
         return prepareItem(item);
 
     };
 
     //save original schema methods
-    let originalGet = schema.get;
-    let originalCreate = schema.create;
-    let originalUpdate = schema.update;
-    let originalDestroy = schema.destroy;
-    let originalQuery = schema.query;
-    let originalScan = schema.scan;
-    let originalParallelScan = schema.parallelScan;
-    let originalGetItems = schema.getItems;
+    var originalGet = schema.get;
+    var originalCreate = schema.create;
+    var originalUpdate = schema.update;
+    var originalDestroy = schema.destroy;
+    var originalQuery = schema.query;
+    var originalScan = schema.scan;
+    var originalParallelScan = schema.parallelScan;
+    var originalGetItems = schema.getItems;
 
     //wrapped item contructor
-    let CachedSchema = function(attr){
-        let item = new schema(attr);
+    var CachedSchema = function(attr){
+        var item = new schema(attr);
 
         return prepareItem(item);
     };
@@ -200,9 +200,9 @@ VogelsCache.prepare = function(schema,config){
             options = {};
         }
 
-        let cacheOptions = getCacheOptions(options);
+        var cacheOptions = getCacheOptions(options);
 
-        let doOriginal = function(){
+        var doOriginal = function(){
             clearCacheOptions(options);
 
             originalGet.apply(schema,[hashKey,rangeKey,options,function(err,model){
@@ -215,11 +215,11 @@ VogelsCache.prepare = function(schema,config){
 
         if(cacheOptions.CACHE_SKIP) return doOriginal();
 
-        let cacheKey = getCacheKey(hashKey,rangeKey);
+        var cacheKey = getCacheKey(hashKey,rangeKey);
 
         redis.get(cacheKey,function(err,resp){
             if(resp){
-                let item = new CachedSchema(JSONfromCache(resp));
+                var item = new CachedSchema(JSONfromCache(resp));
                 item.fromCache = new Date();
                 return callback(null,item)
             }
@@ -239,7 +239,7 @@ VogelsCache.prepare = function(schema,config){
         callback = callback || _.noop;
         options = options || {};
 
-        let cacheOptions = getCacheOptions(options);
+        var cacheOptions = getCacheOptions(options);
 
         clearCacheOptions(options);
 
@@ -270,7 +270,7 @@ VogelsCache.prepare = function(schema,config){
         callback = callback || _.noop;
         options = options || {};
 
-        let cacheOptions = getCacheOptions(options);
+        var cacheOptions = getCacheOptions(options);
 
         //the default behavior for update is to NOT CACHE (even if CACHE_RESULT is setted at models creation)
         //only the option CACHE_RESULT can override that
@@ -285,7 +285,7 @@ VogelsCache.prepare = function(schema,config){
                 if(cacheOptions.CACHE_RESULT){
                     cacheModel(model,cacheOptions.CACHE_EXPIRE);
                 }else{
-                    let cacheKey;
+                    var cacheKey;
                     if(rangeKey){
                         cacheKey = getCacheKey(item[hashKey],item[rangeKey]);
                     }else{
@@ -325,7 +325,7 @@ VogelsCache.prepare = function(schema,config){
 
         originalDestroy.apply(schema,[hashKey,rangeKey,options,function(err,model){
 
-            let cacheKey = getCacheKey(hashKey,rangeKey);
+            var cacheKey = getCacheKey(hashKey,rangeKey);
             redis.del(cacheKey);
 
             callback(err,model);
@@ -333,15 +333,15 @@ VogelsCache.prepare = function(schema,config){
         }])
     };
     CachedSchema.query = function(hashKey){
-        let query = originalQuery.apply(schema,arguments);
+        var query = originalQuery.apply(schema,arguments);
         return cachedExec(query);
     };
     CachedSchema.scan = function(hashKey){
-        let scan = originalScan.apply(schema,arguments);
+        var scan = originalScan.apply(schema,arguments);
         return cachedExec(scan);
     };
     CachedSchema.parallelScan = function(hashKey){
-        let parallelScan = originalParallelScan.apply(schema,arguments);
+        var parallelScan = originalParallelScan.apply(schema,arguments);
         return cachedExec(parallelScan);
     };
 
@@ -352,14 +352,14 @@ VogelsCache.prepare = function(schema,config){
             options = {};
         }
 
-        let cacheOptions = getCacheOptions(options);
+        var cacheOptions = getCacheOptions(options);
 
-        let results = [];
-        let missing = [];
-        let positionMap = {};
-        let indexCount = 0;
+        var results = [];
+        var missing = [];
+        var positionMap = {};
+        var indexCount = 0;
 
-        let doOriginal = function(fetchItems){
+        var doOriginal = function(fetchItems){
 
             clearCacheOptions(options);
 
@@ -375,7 +375,7 @@ VogelsCache.prepare = function(schema,config){
                     }
 
                     if(!cacheOptions.CACHE_SKIP){
-                        let cacheKey = getModelCacheKey(model);
+                        var cacheKey = getModelCacheKey(model);
                         results[positionMap[cacheKey]] = model;
                     }
 
@@ -394,7 +394,7 @@ VogelsCache.prepare = function(schema,config){
 
         //try to get each item in cache in parallel
         async.each(items,function(value,cb){
-            let cacheKey
+            var cacheKey
             if(typeof value === 'string'){
                 cacheKey = getCacheKey(value);
             }else{
@@ -408,7 +408,7 @@ VogelsCache.prepare = function(schema,config){
                 if(err || !resp){
                     missing.push(value);
                 }else{
-                    let item = new CachedSchema(JSONfromCache(resp));
+                    var item = new CachedSchema(JSONfromCache(resp));
                     item.fromCache = new Date();
                     results[positionMap[cacheKey]] = item;
                 }
@@ -435,7 +435,7 @@ VogelsCache.prepare = function(schema,config){
             rangeKey = null;
         }
 
-        let cacheKey = getCacheKey(hashKey,rangeKey);
+        var cacheKey = getCacheKey(hashKey,rangeKey);
         redis.del(cacheKey,callback);
 
     };

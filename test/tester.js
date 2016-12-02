@@ -1,8 +1,8 @@
-let should = require('should');
-let Vogels = require('vogels');
-let Dynogels = require('dynogels');
-let async = require('async');
-let Joi = require('joi');
+var should = require('should');
+var Vogels = require('vogels');
+var Dynogels = require('dynogels');
+var async = require('async');
+var Joi = require('joi');
 
 class Tester{
     constructor(engine,done) {
@@ -11,7 +11,7 @@ class Tester{
         this.Cache = require('../index.js');
         this.Cache.setRedisClient(this.redis);
 
-        let dynamoPort = engine==='vogels'?4567:4568;
+        var dynamoPort = engine==='vogels'?4567:4568;
 
         require('local-dynamo').launch({
             port: dynamoPort,
@@ -62,7 +62,7 @@ class Tester{
 
     createFoo(username,cache,cb){
         if(cache){
-            let CacheableFoo = this.Cache.prepare(this.Foo);
+            var CacheableFoo = this.Cache.prepare(this.Foo);
             CacheableFoo.create({
                 username: username,
                 data: username
@@ -77,7 +77,7 @@ class Tester{
 
     createBar(username,message,cache,cb){
         if(cache){
-            let CacheableBar = this.Cache.prepare(this.Bar);
+            var CacheableBar = this.Cache.prepare(this.Bar);
             CacheableBar.create({
                 username: username,
                 message: message,
@@ -100,8 +100,8 @@ class Tester{
 
     MODEL_GET_shouldGetFromCacheByDefault(done){
 
-        let CacheableFoo = this.Cache.prepare(this.Foo);
-        let key = 'model-get-1';
+        var CacheableFoo = this.Cache.prepare(this.Foo);
+        var key = 'model-get-1';
 
         this.createFoo(key,true,() => {
             CacheableFoo.get(key,(err,foo) => {
@@ -118,8 +118,8 @@ class Tester{
 
     MODEL_GET_shouldTryToGetGromCacheFirstButFallbackToDynamoDBByDefault(done){
 
-        let CacheableFoo = this.Cache.prepare(this.Foo);
-        let key = 'model-get-2';
+        var CacheableFoo = this.Cache.prepare(this.Foo);
+        var key = 'model-get-2';
 
         this.createFoo(key,false,() => {
             CacheableFoo.get(key,(err,foo) => {
@@ -136,8 +136,8 @@ class Tester{
 
     MODEL_GET_shouldNotGetFromCacheIfCACHE_SKIPTrueIsSet(done){
 
-        let CacheableFoo = this.Cache.prepare(this.Foo);
-        let key = 'model-get-3';
+        var CacheableFoo = this.Cache.prepare(this.Foo);
+        var key = 'model-get-3';
 
         this.createFoo(key,true,() => {
             CacheableFoo.get(key,{CACHE_SKIP:true},(err,foo) => {
@@ -154,8 +154,8 @@ class Tester{
 
     MODEL_GET_shouldNotSaveToCacheIfCACHE_RESULTFalse(done){
 
-        let CacheableFoo = this.Cache.prepare(this.Foo);
-        let key = 'model-get-5';
+        var CacheableFoo = this.Cache.prepare(this.Foo);
+        var key = 'model-get-5';
 
         this.createFoo(key,false,() => {
             CacheableFoo.get(key,{CACHE_SKIP:true,CACHE_RESULT:false},(err,foo) => {
@@ -177,10 +177,10 @@ class Tester{
 
     MODEL_CREATE_shouldCacheByDefault(done){
 
-        let CacheableFoo = this.Cache.prepare(this.Foo);
-        let key = 'model-create-1';
+        var CacheableFoo = this.Cache.prepare(this.Foo);
+        var key = 'model-create-1';
 
-        let foo = CacheableFoo.create({
+        var foo = CacheableFoo.create({
             username: key,
             data: 'bar'
         },(err) => {
@@ -199,11 +199,11 @@ class Tester{
 
     MODEL_CREATE_shouldCacheCreationOfMultipleItems(done){
 
-        let CacheableFoo = this.Cache.prepare(this.Foo);
-        let key1 = 'model-create-2-1';
-        let key2 = 'model-create-2-2';
+        var CacheableFoo = this.Cache.prepare(this.Foo);
+        var key1 = 'model-create-2-1';
+        var key2 = 'model-create-2-2';
 
-        let foo = CacheableFoo.create([
+        var foo = CacheableFoo.create([
             {
                 username: key1,
                 data: 'bar'
@@ -234,10 +234,10 @@ class Tester{
 
     MODEL_CREATE_shouldNOTCacheIfCACHE_RESULTFalsePassedAsOption(done){
 
-        let CacheableFoo = this.Cache.prepare(this.Foo);
-        let key = 'model-create-3';
+        var CacheableFoo = this.Cache.prepare(this.Foo);
+        var key = 'model-create-3';
 
-        let foo = CacheableFoo.create({
+        var foo = CacheableFoo.create({
             username: key,
             data: 'bar'
         },{CACHE_RESULT: false},() => {
@@ -254,11 +254,11 @@ class Tester{
 
     MODEL_CREATE_shouldSetCacheExpireIfCacheExpirePassedAsOption(done){
 
-        let CacheableFoo = this.Cache.prepare(this.Foo);
-        let key = 'model-create-4';
-        let expire = 10;
+        var CacheableFoo = this.Cache.prepare(this.Foo);
+        var key = 'model-create-4';
+        var expire = 10;
 
-        let foo = CacheableFoo.create({
+        var foo = CacheableFoo.create({
             username: key,
             data: 'bar'
         },{CACHE_EXPIRE: expire},() => {
@@ -276,8 +276,8 @@ class Tester{
 
     MODEL_UPDATE_shouldNotCacheAndDeleteFromCacheAfterUpdate(done){
 
-        let CacheableFoo = this.Cache.prepare(this.Foo);
-        let key = 'model-update-1';
+        var CacheableFoo = this.Cache.prepare(this.Foo);
+        var key = 'model-update-1';
 
         this.createFoo(key,true,() => {
 
@@ -307,14 +307,14 @@ class Tester{
 
     MODEL_UPDATE_shouldCacheIfPassedOptionCacheResultTrue(done){
 
-        let CacheableFoo = this.Cache.prepare(this.Foo);
-        let key = 'model-update-2';
+        var CacheableFoo = this.Cache.prepare(this.Foo);
+        var key = 'model-update-2';
 
         this.createFoo(key,true,() => {
 
             this.redis.get('foo:'+key,(err,redisItem) => {
                 should.not.exist(err);
-                let parseItem = JSON.parse(redisItem);
+                var parseItem = JSON.parse(redisItem);
                 parseItem.data.should.be.equal(key);
 
                 CacheableFoo.update({username: key,data:'updated'},{CACHE_RESULT: true},(err,foo) => {
@@ -325,7 +325,7 @@ class Tester{
 
                     this.redis.get('foo:'+key,(err,redisItem) => {
                         should.not.exist(err);
-                        let parseItem = JSON.parse(redisItem);
+                        var parseItem = JSON.parse(redisItem);
                         parseItem.data.should.be.equal('updated');
                         done();
                     });
@@ -340,8 +340,8 @@ class Tester{
 
     MODEL_DESTROY_shouldAlsoRemoveFromCache(done){
 
-        let CacheableFoo = this.Cache.prepare(this.Foo);
-        let key = 'model-destroy-1';
+        var CacheableFoo = this.Cache.prepare(this.Foo);
+        var key = 'model-destroy-1';
 
         this.createFoo(key,true,() => {
             CacheableFoo.destroy(key,(err) => {
@@ -361,19 +361,19 @@ class Tester{
 
     MODEL_QUERY_shouldNotCacheByDefault(done){
 
-        let CacheableBar = this.Cache.prepare(this.Bar);
-        let key = 'model-query-1';
+        var CacheableBar = this.Cache.prepare(this.Bar);
+        var key = 'model-query-1';
 
         this.createBars(key,['a','b'],false,() => {
             CacheableBar.query(key).exec((err,bars) => {
 
                 should.not.exist(err);
 
-                let b0 = bars.Items[0];
+                var b0 = bars.Items[0];
                 should.not.exist(b0.cached);
                 should.not.exist(b0.fromCache);
 
-                let b1 = bars.Items[1];
+                var b1 = bars.Items[1];
                 should.not.exist(b1.cached);
                 should.not.exist(b1.fromCache);
 
@@ -386,19 +386,19 @@ class Tester{
 
     MODEL_QUERY_shouldCacheIfCalledCacheResultsTrueInQuery(done){
 
-        let CacheableBar = this.Cache.prepare(this.Bar);
-        let key = 'model-query-2';
+        var CacheableBar = this.Cache.prepare(this.Bar);
+        var key = 'model-query-2';
 
         this.createBars(key,['a','b'],false,() => {
             CacheableBar.query(key).cacheResults(true).exec((err,bars) => {
 
                 should.not.exist(err);
 
-                let b0 = bars.Items[0];
+                var b0 = bars.Items[0];
                 b0.cached.should.be.ok;
                 should.not.exist(b0.fromCache);
 
-                let b1 = bars.Items[1];
+                var b1 = bars.Items[1];
                 b1.cached.should.be.ok;
                 should.not.exist(b1.fromCache);
 
@@ -411,10 +411,10 @@ class Tester{
 
     MODEL_UNCACHE_shouldCacheNewModel(done){
 
-        let key = 'model-uncache-1';
-        let CacheableFoo = this.Cache.prepare(this.Foo);
+        var key = 'model-uncache-1';
+        var CacheableFoo = this.Cache.prepare(this.Foo);
 
-        let foo = CacheableFoo.create({
+        var foo = CacheableFoo.create({
             username: key,
             data: 'bar'
         },(err) => {
@@ -456,9 +456,9 @@ class Tester{
 
     MODEL_GETITEMS_shouldCacheByDefault(done){
 
-        let CacheableBar = this.Cache.prepare(this.Bar);
-        let key = 'model-getItems-1';
-        let items = [
+        var CacheableBar = this.Cache.prepare(this.Bar);
+        var key = 'model-getItems-1';
+        var items = [
             {username: key, message:'a'},
             {username: key, message:'b'}
         ];
@@ -468,11 +468,11 @@ class Tester{
 
                 should.not.exist(err);
 
-                let b0 = bars[0];
+                var b0 = bars[0];
                 b0.cached.should.be.ok;
                 should.not.exist(b0.fromCache);
 
-                let b1 = bars[1];
+                var b1 = bars[1];
                 b1.cached.should.be.ok;
                 should.not.exist(b1.fromCache);
 
@@ -485,9 +485,9 @@ class Tester{
 
     MODEL_GETITEMS_shouldNotTryToFetchFromDynamoDbIfFoundAllInCache(done){
 
-        let CacheableBar = this.Cache.prepare(this.Bar);
-        let key = 'model-getItems-1';
-        let items = [
+        var CacheableBar = this.Cache.prepare(this.Bar);
+        var key = 'model-getItems-1';
+        var items = [
             {username: key, message:'a'},
             {username: key, message:'b'}
         ];
@@ -497,11 +497,11 @@ class Tester{
 
                 should.not.exist(err);
 
-                let b0 = bars[0];
+                var b0 = bars[0];
                 should.not.exist(b0.cached);
                 b0.fromCache.should.be.ok;
 
-                let b1 = bars[1];
+                var b1 = bars[1];
                 should.not.exist(b1.cached);
                 b1.fromCache.should.be.ok;
 
@@ -514,9 +514,9 @@ class Tester{
 
     MODEL_GETITEMS_shouldSearchInCacheAndFallbackToDynamoDbByDefault(done){
 
-        let CacheableBar = this.Cache.prepare(this.Bar);
-        let key = 'model-getItems-2';
-        let items = [
+        var CacheableBar = this.Cache.prepare(this.Bar);
+        var key = 'model-getItems-2';
+        var items = [
             {username: key, message:'a'},
             {username: key, message:'c'}, //don't exist
             {username: key, message:'b'},
@@ -531,11 +531,11 @@ class Tester{
 
                     bars.length.should.be.equal(2);
 
-                    let b0 = bars[0]; //a not from cache
+                    var b0 = bars[0]; //a not from cache
                     b0.cached.should.be.ok;
                     should.not.exist(b0.fromCache);
 
-                    let b1 = bars[1]; //b from cache
+                    var b1 = bars[1]; //b from cache
                     should.not.exist(b1.cached);
                     b1.fromCache.should.be.ok;
 
@@ -549,9 +549,9 @@ class Tester{
 
     MODEL_GETITEMS_shouldNotGetFromCacheIfCacheSkipTrueIsSet(done){
 
-        let CacheableBar = this.Cache.prepare(this.Bar);
-        let key = 'model-getItems-3';
-        let items = [
+        var CacheableBar = this.Cache.prepare(this.Bar);
+        var key = 'model-getItems-3';
+        var items = [
             {username: key, message:'a'},
             {username: key, message:'b'}
         ];
@@ -561,11 +561,11 @@ class Tester{
 
                 should.not.exist(err);
 
-                let b0 = bars[0];
+                var b0 = bars[0];
                 b0.cached.should.be.ok;
                 should.not.exist(b0.fromCache);
 
-                let b1 = bars[1];
+                var b1 = bars[1];
                 b1.cached.should.be.ok;
                 should.not.exist(b1.fromCache);
 
@@ -578,9 +578,9 @@ class Tester{
 
     MODEL_GETITEMS_shouldNotCacheIfCacheResultFalseIsSet(done){
 
-        let CacheableBar = this.Cache.prepare(this.Bar);
-        let key = 'model-getItems-4';
-        let items = [
+        var CacheableBar = this.Cache.prepare(this.Bar);
+        var key = 'model-getItems-4';
+        var items = [
             {username: key, message:'a'},
             {username: key, message:'b'}
         ];
@@ -590,11 +590,11 @@ class Tester{
 
                 should.not.exist(err);
 
-                let b0 = bars[0];
+                var b0 = bars[0];
                 should.not.exist(b0.cached);
                 should.not.exist(b0.fromCache);
 
-                let b1 = bars[1];
+                var b1 = bars[1];
                 should.not.exist(b1.cached);
                 should.not.exist(b1.fromCache);
 
@@ -615,10 +615,10 @@ class Tester{
 
     ITEM_SAVE_shouldCacheByDefault(done){
 
-        let CacheableFoo = this.Cache.prepare(this.Foo);
-        let key = 'item-save-1';
+        var CacheableFoo = this.Cache.prepare(this.Foo);
+        var key = 'item-save-1';
 
-        let foo = new CacheableFoo({
+        var foo = new CacheableFoo({
             username: key,
             data: 'bar'
         });
@@ -639,8 +639,8 @@ class Tester{
 
     ITEM_UPDATE_shouldNotCacheAndDeleteFromCacheAfterUpdate(done){
 
-        let CacheableFoo = this.Cache.prepare(this.Foo);
-        let key = 'item-update-1';
+        var CacheableFoo = this.Cache.prepare(this.Foo);
+        var key = 'item-update-1';
 
         this.createFoo(key,true,() => {
 
@@ -677,14 +677,14 @@ class Tester{
 
     ITEM_UPDATE_shouldCacheIfPassedOptionCacheResultTrue(done){
 
-        let CacheableFoo = this.Cache.prepare(this.Foo);
-        let key = 'item-update-1';
+        var CacheableFoo = this.Cache.prepare(this.Foo);
+        var key = 'item-update-1';
 
         this.createFoo(key,true,() => {
 
             this.redis.get('foo:'+key,(err,redisItem) => {
                 should.not.exist(err);
-                let parseItem = JSON.parse(redisItem);
+                var parseItem = JSON.parse(redisItem);
                 parseItem.data.should.be.equal(key);
 
                 CacheableFoo.get(key,(err,foo) => {
@@ -699,7 +699,7 @@ class Tester{
 
                         this.redis.get('foo:'+key,(err,redisItem) => {
                             should.not.exist(err);
-                            let parseItem = JSON.parse(redisItem);
+                            var parseItem = JSON.parse(redisItem);
                             parseItem.data.should.be.equal('new value');
                             done();
                         });
@@ -717,8 +717,8 @@ class Tester{
 
     ITEM_DESTROY_shouldAlsoRemoveFromCache(done){
 
-        let CacheableFoo = this.Cache.prepare(this.Foo);
-        let key = 'item-destroy-1';
+        var CacheableFoo = this.Cache.prepare(this.Foo);
+        var key = 'item-destroy-1';
 
         this.createFoo(key,true,() => {
             CacheableFoo.get(key,(err,foo) => {
@@ -744,8 +744,8 @@ class Tester{
 
     ITEM_UNCACHE_shouldRemoveOnlyFromCache(done){
 
-        let CacheableFoo = this.Cache.prepare(this.Foo);
-        let key = 'item-uncache-1';
+        var CacheableFoo = this.Cache.prepare(this.Foo);
+        var key = 'item-uncache-1';
 
         this.createFoo(key,true,() => {
             CacheableFoo.get(key,(err,foo) => {
@@ -782,10 +782,10 @@ class Tester{
 
     EXPIRE_shouldCacheExpireIfCacheExpireIsSetted(done){
 
-        let CacheableFoo = this.Cache.prepare(this.Foo);
-        let key = 'expire-1';
+        var CacheableFoo = this.Cache.prepare(this.Foo);
+        var key = 'expire-1';
 
-        let foo = CacheableFoo.create({
+        var foo = CacheableFoo.create({
             username: key,
             data: key
         },{CACHE_EXPIRE:1},(err) => {
@@ -812,8 +812,8 @@ class Tester{
 
     SERIALIZATION_shouldPreserveTypes(done){
 
-        let CacheableFoo = this.Cache.prepare(this.Foo);
-        let key = 'serialization-3';
+        var CacheableFoo = this.Cache.prepare(this.Foo);
+        var key = 'serialization-3';
 
         CacheableFoo.create({
             username: key,
