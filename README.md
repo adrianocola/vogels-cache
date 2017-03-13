@@ -115,6 +115,8 @@ CacheableAccount.get('foo',{CACHE_SKIP:true},function(err,item){
 * **CACHING UPDATES**: If you want to cache with an .update() use the option CACHE_RESULT:true, but be carefull with the parameter ReturnValues (NONE | ALL_OLD | UPDATED_OLD | ALL_NEW | UPDATED_NEW). That is why the default behavior is to NOT cache updates requests.
 
 ### Changelog
+* **1.8.1**
+    * Updated dependencies
 * **1.8.0**
     * Added option CACHE_RESULT to .update() to force caching updates per request
 * **1.7.1**
@@ -128,7 +130,7 @@ CacheableAccount.get('foo',{CACHE_SKIP:true},function(err,item){
 
 (The MIT License)
 
-Copyright (c) 2016 Adriano Cola
+Copyright (c) 2017 Adriano Cola
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
